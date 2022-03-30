@@ -162,6 +162,7 @@ type PurgeVaultAccessorFn func(accessors []*structs.VaultAccessor) error
 // client.
 type tokenData struct {
 	CreationTTL   int      `mapstructure:"creation_ttl"`
+	// NOTE: can be less than creation_ttl, this is renewal ttl; search "periodic tokens"
 	TTL           int      `mapstructure:"ttl"`
 	Renewable     bool     `mapstructure:"renewable"`
 	Policies      []string `mapstructure:"policies"`
@@ -566,6 +567,7 @@ func (v *vaultClient) renewalLoop() {
 				break
 			}
 
+			// TODO: possibly add to stats object so it gets logged in agent info?
 			metrics.IncrCounter([]string{"nomad", "vault", "renew_failed"}, 1)
 			v.logger.Warn("got error or bad auth, so backing off", "error", err, "recoverable", recoverable)
 
